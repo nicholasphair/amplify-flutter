@@ -55,7 +55,7 @@ abstract class SignUpFormField<FieldValue extends Object>
     FormFieldValidator<String>? validator,
     Iterable<String>? autofillHints,
   }) =>
-      _SignUpTextField(
+      _SignUpPasswordField(
         key: key ?? keyPasswordSignUpFormField,
         titleKey: InputResolverKey.passwordTitle,
         hintTextKey: InputResolverKey.passwordHint,
@@ -787,5 +787,58 @@ class _SignUpDateFieldState extends _SignUpFormFieldState<String>
       ),
       isOptional: isOptional,
     );
+  }
+}
+
+class _SignUpPasswordField extends SignUpFormField<String> {
+  const _SignUpPasswordField({
+    super.key,
+    required super.field,
+    super.titleKey,
+    super.hintTextKey,
+    CognitoUserAttributeKey? attributeKey,
+    super.validator,
+    super.required,
+    super.autofillHints,
+  }) : super._(
+          customAttributeKey: attributeKey,
+        );
+
+  @override
+  _SignUpPasswordFieldState createState() => _SignUpPasswordFieldState();
+}
+
+class _SignUpPasswordFieldState extends _SignUpTextFieldState {
+  @override
+  String? get initialValue {
+    return state.password;
+  }
+
+  @override
+  ValueChanged<String> get onChanged {
+    return (v) => state.password = v;
+  }
+
+  @override
+  Widget? get companionWidget {
+    final policyWidget =
+        InheritedForms.of(context).signUpForm.passwordPolicyWidget;
+    if (policyWidget != null) {
+      return policyWidget;
+    }
+
+    final validatorResult = validator(state.password);
+    if (validatorResult != null) {
+      return Text(validatorResult);
+    }
+    return null;
+  }
+
+  @override
+  FormFieldValidator<String> get validator {
+    return validateNewPassword(
+      amplifyConfig: config.amplifyConfig,
+      inputResolver: stringResolver.inputs,
+    )(context);
   }
 }
